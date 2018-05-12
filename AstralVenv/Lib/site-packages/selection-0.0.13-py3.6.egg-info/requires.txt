@@ -1,0 +1,3 @@
+lxml;platform_system!="Windows"
+weblib
+six
