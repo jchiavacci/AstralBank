@@ -7,10 +7,12 @@ from player.models import Character
 
 TRANSACTION_TYPES = (
     ('deposit', 'Deposit'),
-    ('withdraw', 'Withdraw')
+    ('withdraw', 'Withdraw'),
+    ('move', 'Move')
 )
 
-
+# LINE FORMAT:
+# REALM, FACTION, GUILD, SCAN TIME, TRANSACTION TIME, TAB NUMBER, TAB NAME, TRANSACTION TYPE, UNIT NAME, ITEM NAME, ITEM ID, ITEM COUNT
 class Transaction(models.Model):
     time = models.DateTimeField()
     character = models.ForeignKey(Character, models.SET_NULL, null=True)
@@ -21,36 +23,102 @@ class Transaction(models.Model):
     error_message = models.CharField(max_length=500, null=True)
 
     def __str__(self):
-        return "{0} {1} {2} itemId:{3}".format(self.character, self.type, self.quantity, self.item.itemId)
+        if self.item is None:
+            item = "ITEM MISSING"
+        else:
+            item = self.item.itemId
+        return "{0} {1} {2} itemId: {3}".format(self.character, self.type, self.quantity, item)
 
+    def process(self):
+        if self.processed is False:
+            if self.character is not None:
+                if self.character.player is not None:
+                    if self.item is not None:
+                        if self.item.points is not None:
+                            if self.type == 'deposit':
+                                self.character.player.points += self.item.points * self.quantity
+                            else:
+                                self.character.player.points -= self.item.points * self.quantity
+                            self.character.player.save()
+                            self.processed = True
+                            self.error_message = ""
+                            self.save()
+                        else:
+                            self.error_message = "Item has no point value assigned"
+                            self.save()
+                    else:
+                        self.error_message = "Item does not exist"
+                        self.save()
+                else:
+                    self.error_message = "Character has no player assigned"
+                    self.save()
+            else:
+                self.error_message = "Character does not exist"
+                self.save()
+
+    def revert(self):
+        if self.processed is True:
+            if self.character is not None:
+                if self.character.player is not None:
+                    if self.item is not None:
+                        if self.item.points is not None:
+                            if self.type == 'deposit':
+                                self.character.player.points -= self.item.points * self.quantity
+                            else:
+                                self.character.player.points += self.item.points * self.quantity
+                            self.character.player.save()
+
+
+class TransactionFileQuerySet(models.QuerySet):
+    def delete(self, *args, **kwargs):
+        for obj in self:
+            f = io.TextIOWrapper(obj.file.file.file, encoding='UTF-8')
+            transactions = csv.reader(f)
+            for line in transactions:
+                transaction = Transaction.objects.filter(time=datetime.fromtimestamp(int(line[4])).strftime("%Y-%m-%d %H:%M:%S")).filter(character__name=line[8].strip()).filter(type=line[7].strip()).filter(item__itemId=line[10]).filter(quantity=int(line[11]))
+                if transaction.first() is not None:
+                    transaction.first().revert()
+                    transaction.first().delete()
+        super(TransactionFileQuerySet, self).delete(*args, **kwargs)
 
 class TransactionFile(models.Model):
+    objects = TransactionFileQuerySet.as_manager()
     file = models.FileField(unique=True)
+
+    class Meta:
+        verbose_name = "file"
+        verbose_name_plural = "files"
 
     def __str__(self):
          return "{0}".format(os.path.basename(self.file.name))
 
-    def delete(self, 
     def save(self, *args, **kwargs):
         f = io.TextIOWrapper(self.file.file.file, encoding='UTF-8')
         transactions = csv.reader(f)
         for line in transactions:
             input_data = Transaction()
             input_data.error_message = ""
-            input_data.time = datetime.strptime(line[0], "%Y/%m/%d %H:%M:%S")
-            char = Character.objects.filter(name=line[1])
+            #input_data.time = datetime.strptime(line[4], "%Y/%m/%d %H:%M:%S")
+            input_data.time = datetime.fromtimestamp(int(line[4])).strftime("%Y-%m-%d %H:%M:%S")
+            char = Character.objects.filter(name=line[8].strip())
             if char.exists():
                 input_data.character = char.first()
             else:
-                input_data.character = Character(name=line[1])
+                character = Character(name=line[8].strip())
+                character.save()
+                input_data.character = character
                 input_data.error_message += "No existing character. "
-            input_data.type = line[2]
-            item = Item.objects.filter(itemId=line[3])
+            input_data.type = line[7].strip()
+            item = Item.objects.filter(itemId=line[10])
             if item.exists():
                 input_data.item = item.first()
             else:
-                input_data.item = Item(itemId=line[3])
+                new_item = Item(itemId=line[10], itemName=line[9].strip())
+                new_item.save()
+                input_data.item = new_item
                 input_data.error_message += "No existing item."
-            input_data.quantity = line[4]
+            input_data.quantity = int(line[11])
             input_data.save()
+            input_data.process()
+
         super(TransactionFile, self).save(args, kwargs)
