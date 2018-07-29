@@ -1,0 +1,4 @@
+django-admin-list-filter-dropdown
+django-admin-rangefilter
+django-debug-toolbar
+django>=2.0.2
