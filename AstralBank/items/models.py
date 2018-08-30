@@ -30,7 +30,11 @@ class Item(models.Model):
         self.__original_points = self.points
 
     def __str__(self):
-        return "{0}".format(self.itemId)
+        if self.itemName is None:
+            name = "NO NAME"
+        else:
+            name = self.itemName
+        return "{0} ({1})".format(name, self.itemId)
 
     def save(self, *args, **kwargs):
         from transactions.models import Transaction

@@ -8,7 +8,8 @@ from player.models import Character
 TRANSACTION_TYPES = (
     ('deposit', 'Deposit'),
     ('withdraw', 'Withdraw'),
-    ('move', 'Move')
+    ('move', 'Move'),
+    ('repair', 'Repair')
 )
 
 # LINE FORMAT:
@@ -24,7 +25,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         if self.item is None:
-            item = "ITEM MISSING"
+            item = "ITEM NAME MISSING"
         else:
             item = self.item.itemId
         return "{0} {1} {2} itemId: {3}".format(self.character, self.type, self.quantity, item)
@@ -37,12 +38,10 @@ class Transaction(models.Model):
                         if self.item.points is not None:
                             if self.type == 'deposit':
                                 self.character.player.points += self.item.points * self.quantity
-                            else:
-                                self.character.player.points -= self.item.points * self.quantity
-                            self.character.player.save()
-                            self.processed = True
-                            self.error_message = ""
-                            self.save()
+                                self.character.player.save()
+                                self.processed = True
+                                self.error_message = ""
+                                self.save()
                         else:
                             self.error_message = "Item has no point value assigned"
                             self.save()
@@ -64,9 +63,7 @@ class Transaction(models.Model):
                         if self.item.points is not None:
                             if self.type == 'deposit':
                                 self.character.player.points -= self.item.points * self.quantity
-                            else:
-                                self.character.player.points += self.item.points * self.quantity
-                            self.character.player.save()
+                                self.character.player.save()
 
 
 class TransactionFileQuerySet(models.QuerySet):
@@ -117,7 +114,15 @@ class TransactionFile(models.Model):
                 new_item.save()
                 input_data.item = new_item
                 input_data.error_message += "No existing item."
-            input_data.quantity = int(line[11])
+            if input_data.item.itemId == 0:
+                #Its gold. Divide by 10000 to switch from gold val to copper val
+                #As per terra, round up.
+                if int(line[11]) % 10000 != 0:
+                    input_data.quantity = (int(line[11]) / 10000) + 1;
+                else:
+                    input_data.quantity = int(line[11]) / 10000
+            else:
+                input_data.quantity = int(line[11])
             input_data.save()
             input_data.process()
 
