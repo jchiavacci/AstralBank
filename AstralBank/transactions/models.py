@@ -72,7 +72,19 @@ class TransactionFileQuerySet(models.QuerySet):
             f = io.TextIOWrapper(obj.file.file.file, encoding='UTF-8')
             transactions = csv.reader(f)
             for line in transactions:
-                transaction = Transaction.objects.filter(time=datetime.fromtimestamp(int(line[4])).strftime("%Y-%m-%d %H:%M:%S")).filter(character__name=line[8].strip()).filter(type=line[7].strip()).filter(item__itemId=line[10]).filter(quantity=int(line[11]))
+                goldVal = 0
+                if int(line[10]) == 0:
+                #Its gold. Divide by 10000 to switch from gold val to copper val
+                #As per terra, round up.
+                    if int(line[11]) < 10000:
+                        goldVal = 1
+                    elif int(line[11]) % 10000 != 0:
+                        goldVal = (int(line[11]) / 10000) + 1
+                    else:
+                        goldVal = int(line[11]) / 10000
+                else:
+                    goldVal = int(line[11])
+                transaction = Transaction.objects.filter(time=datetime.fromtimestamp(int(line[4])).strftime("%Y-%m-%d %H:%M:%S")).filter(character__name=line[8].strip()).filter(type=line[7].strip()).filter(item__itemId=line[10]).filter(quantity=goldVal)
                 if transaction.first() is not None:
                     transaction.first().revert()
                     transaction.first().delete()
@@ -96,6 +108,7 @@ class TransactionFile(models.Model):
             input_data = Transaction()
             input_data.error_message = ""
             #input_data.time = datetime.strptime(line[4], "%Y/%m/%d %H:%M:%S")
+            print(line)
             input_data.time = datetime.fromtimestamp(int(line[4])).strftime("%Y-%m-%d %H:%M:%S")
             char = Character.objects.filter(name=line[8].strip())
             if char.exists():
@@ -117,7 +130,9 @@ class TransactionFile(models.Model):
             if input_data.item.itemId == 0:
                 #Its gold. Divide by 10000 to switch from gold val to copper val
                 #As per terra, round up.
-                if int(line[11]) % 10000 != 0:
+                if int(line[11]) < 10000:
+                    input_data.quantity = 1;
+                elif int(line[11]) % 10000 != 0:
                     input_data.quantity = (int(line[11]) / 10000) + 1;
                 else:
                     input_data.quantity = int(line[11]) / 10000

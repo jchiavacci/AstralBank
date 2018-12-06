@@ -1,4 +1,5 @@
 from django.db import models
+import csv, io, os
 
 
 class Category(models.Model):
@@ -43,6 +44,30 @@ class Item(models.Model):
             queryset = Transaction.objects.filter(processed=False).filter(item__itemId=self.itemId)
             for t in queryset:
                 t.process()
+
+class ItemFile(models.Model):
+    file = models.FileField(unique=True)
+
+    class Meta:
+        verbose_name = "file"
+        verbose_name_plural = "files"
+
+    def __str__(self):
+        return "{0}".format(os.path.basename(self.file.name))
+
+    def save(self, *args, **kwargs):
+        f = io.TextIOWrapper(self.file.file.file, encoding='UTF-8')
+        items = csv.reader(f)
+        for line in items:
+            input_data = Item()
+            item = Item.objects.filter(itemId=line[0])
+            if item.exists():
+                input_data = item.first()
+                input_data.points = int(line[2])
+            else:
+                input_data = Item(itemId=int(line[0]), itemName=line[1].strip(), points=int(line[2]))
+            input_data.save()
+        super(ItemFile, self).save(args, kwargs)
 
 
 

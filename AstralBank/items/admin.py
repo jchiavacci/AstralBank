@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import Item, Category, Expansion
+from .models import Item, Category, Expansion, ItemFile
 
 admin.site.register(Category)
 admin.site.register(Expansion)
+admin.site.register(ItemFile)
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
