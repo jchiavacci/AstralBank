@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'items',
     'player',
     'transactions',
+    'rewards',
+    'sales',
     'django_admin_listfilter_dropdown',
     'debug_toolbar',
     'rangefilter'
