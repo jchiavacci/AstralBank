@@ -26,7 +26,9 @@ SECRET_KEY = '59iiuy8m_p)b*xs479%q+t%n=v38%(t-%246@iztud&ur&^t#2'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1'
+    '127.0.0.1',
+    'bank.astralguild.com',
+    'localhost',
 ]
 
 
