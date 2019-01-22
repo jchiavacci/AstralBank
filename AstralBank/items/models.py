@@ -63,9 +63,25 @@ class ItemFile(models.Model):
             item = Item.objects.filter(itemId=line[0])
             if item.exists():
                 input_data = item.first()
-                input_data.points = int(line[2])
+                #Its gold. Divide by 10000 to switch from gold val to copper val
+                #As per terra, round up.
+                if int(line[2]) < 10000:
+                    input_data.points = 1;
+                elif int(line[2]) % 10000 != 0:
+                    input_data.points = (int(line[2]) / 10000) + 1;
+                else:
+                    input_data.points = int(line[2]) / 10000
             else:
-                input_data = Item(itemId=int(line[0]), itemName=line[1].strip(), points=int(line[2]))
+                #Its gold. Divide by 10000 to switch from gold val to copper val
+                #As per terra, round up.
+                points = 1
+                if int(line[2]) < 10000:
+                    points = 1
+                elif int(line[2]) % 10000 != 0:
+                    points = (int(line[2]) / 10000) + 1
+                else:
+                    points = int(line[2]) / 10000
+                input_data = Item(itemId=int(line[0]), itemName=line[1].strip(), points=points)
             input_data.save()
         super(ItemFile, self).save(args, kwargs)
 
