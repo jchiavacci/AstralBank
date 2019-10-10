@@ -16,12 +16,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import include, url, static
+
+admin.site.site_header = 'Astral Bank Admin'
+admin.site.site_title = 'Astral Bank Admin'
+admin.site.index_title = 'Astral Bank Administration'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', admin.site.urls),
-]
+    # path('', admin.site.urls),
+    path('', include('player.urls'))
+] + static.static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
     import debug_toolbar

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<style>
+    .table-container {
+        width:200px;
+        padding: 8px;
+        margin:0 auto;
+        top:50%;
+        left:50%;
+    }
+    .box {
+        text-align: center;
+        margin-top:100px;
+    }
+    .logo {
+        text-align:  center;
+        margin-top:50px;
+    }
+    body {
+        background-color: #212529;
+        color: white;
+    }
+</style>
+<body>
+{% load static %}
+<div class="logo">
+    <img src="{% static 'images/logo_dark.png' %}"/>
+</div>
+<div id="topPlayersDiv" class="box" >
+    <h1 class="title">Top 5 Contributors</h1>
+    <div class="table-container">
+        <table class="table table-striped table-dark">
+            <tbody>
+                {% for p in players %}
+                    <tr>
+                        <td>{{p.name}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
+
+
