@@ -6,20 +6,23 @@
     <title>Home</title>
 </head>
 <style>
-    .table-container {
-        width:200px;
-        padding: 8px;
-        margin:0 auto;
-        top:50%;
-        left:50%;
-    }
+{#    .table-container {#}
+{#        width:200px;#}
+{#        padding: 8px;#}
+{#        margin:0 auto;#}
+{#        top:50%;#}
+{#        left:50%;#}
+{#    }#}
     .box {
         text-align: center;
-        margin-top:100px;
+        margin-top:20px;
     }
     .logo {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 23%;
         text-align:  center;
-        margin-top:50px;
     }
     body {
         background-color: #212529;
@@ -31,20 +34,23 @@
 <div class="logo">
     <img src="{% static 'images/logo_dark.png' %}"/>
 </div>
-<div id="topPlayersDiv" class="box" >
-    <h1 class="title">Top 5 Contributors</h1>
-    <div class="table-container">
-        <table class="table table-striped table-dark">
-            <tbody>
-                {% for p in players %}
-                    <tr>
-                        <td>{{p.name}}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div id="adminLinkDiv" class="box">
+    <a href="{% url 'admin:index' %}">Bank Admin Login</a>
 </div>
+{#<div id="topPlayersDiv" class="box" >#}
+{#    <h1 class="title">Top 5 Contributors</h1>#}
+{#    <div class="table-container">#}
+{#        <table class="table table-striped table-dark">#}
+{#            <tbody>#}
+{#                {% for p in players %}#}
+{#                    <tr>#}
+{#                        <td>{{p.name}}</td>#}
+{#                    </tr>#}
+{#                {% endfor %}#}
+{#            </tbody>#}
+{#        </table>#}
+{#    </div>#}
+{#</div>#}
 </body>
 </html>
 

@@ -1,4 +1,7 @@
+django-background-tasks
 django-admin-list-filter-dropdown
 django-admin-rangefilter
 django-debug-toolbar
+requests
+filelock
 django>=2.0.2

@@ -7,7 +7,7 @@ admin.site.register(ItemFile)
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('itemId', 'itemName', 'points', 'category', 'expansion')
+    list_display = ('itemId', 'itemName', 'points', 'category', 'expansion', 'updated')
 
     class NotProcessableListFilter(admin.SimpleListFilter):
         title = 'Item Status'
