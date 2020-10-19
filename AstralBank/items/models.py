@@ -1,5 +1,5 @@
 from django.db import models
-import csv, io, os
+import csv, io, os, requests
 
 
 class Category(models.Model):
@@ -22,6 +22,8 @@ class Item(models.Model):
     category = models.ForeignKey(Category, models.SET_NULL, null=True, blank=True)
     expansion = models.ForeignKey(Expansion, models.SET_NULL, blank=True, null=True)
     points = models.IntegerField(null=True)
+    updated = models.DateTimeField(auto_now=True)
+    createdTimestamp = models.DateTimeField(auto_now_add=True)
 
     #Overwriting init like this lets us save the original value so we can smart update transactions
     __original_points = None
@@ -44,6 +46,7 @@ class Item(models.Model):
             queryset = Transaction.objects.filter(processed=False).filter(item__itemId=self.itemId)
             for t in queryset:
                 t.process()
+
 
 class ItemFile(models.Model):
     file = models.FileField(unique=True)
