@@ -2,5 +2,5 @@ requests
 filelock
 django-admin-list-filter-dropdown==1.0.1
 django-admin-rangefilter==0.3.7
-django-debug-toolbar==1.9.1
+django-debug-toolbar==1.11.1
 django==2.0.7
